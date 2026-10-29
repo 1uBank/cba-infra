@@ -1,0 +1,22 @@
+region = "eu-west-1"
+
+vpc_cidr             = "10.0.0.0/16"
+public_subnet_cidrs  = ["10.0.0.0/24", "10.0.1.0/24"]
+private_subnet_cidrs = ["10.0.10.0/24", "10.0.11.0/24"]
+nat_gateway_per_az    = true # resilient; set false to reduce NAT gateway cost
+enable_nat_gateways   = true
+# Omit to auto-select two AZs, or set two supported AZ names for this region.
+# availability_zones = ["eu-west-1a", "eu-west-1b"]
+
+# Set both when intentionally removing NAT; db-init still needs internet egress
+# unless its image is mirrored into your ECR.
+# enable_nat_gateways  = false
+# create_vpc_endpoints = true
+
+acm_certificate_arn = "arn:aws:acm:eu-west-1:111122223333:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+alb_ingress_cidrs   = ["203.0.113.10/32"] # your office / VPN, not 0.0.0.0/0
+
+hostname        = "cba-dev.example.com" # optional
+route53_zone_id = "Z0123456789ABCDEFGHIJ" # optional
+
+cors_allowed_origin_patterns = "https://portal-dev.example.com"
