@@ -234,6 +234,49 @@ When a hostname is configured, use it in place of `<hostname-or-alb-dns>`.
 Complete the application's first-login/admin-password setup before sharing the
 environment.
 
+## cba-auth and cba-banking-api (same cluster, same ALB)
+
+Two more services run in the existing `cba-core-dev` cluster, defined in
+`modules/cba-core/auth.tf` and `modules/cba-core/banking_api.tf`:
+
+| Service | Reached at | Port | Health (ALB target group) | ECR repository |
+|---|---|---|---|---|
+| cba-auth (Keycloak) | Host `auth_hostname` | 8080 | `:9000/health/ready` | `cba-core-dev-auth-api` (+ `cba-core-dev-auth-realm-loader`) |
+| cba-banking-api | Host `banking_api_hostname` | 8080 | `:9001/actuator/health/readiness` | `cba-core-dev-banking-api` |
+
+- Both names need DNS (set `route53_zone_id` to have Terraform create the records) and
+  must be covered by `acm_certificate_arn`; a wildcard certificate is simplest.
+- The Banking API and the realm loader reach the auth service on its internal address,
+  `http://cba-auth.cba-core-dev.internal:8080` (Cloud Map, see `terraform output auth_internal_url`).
+- Both services start with a desired count of 0, like the backend.
+- The `cba-core` ECS service, task definition and routing are unchanged.
+
+First deployment, after `terraform apply`:
+
+1. Run each one-off database task once (`terraform output auth_db_init_run_command`,
+   `terraform output banking_api_db_init_run_command`) and check the log group
+   `/ecs/cba-core-dev-db-init` for `auth db-init finished` and `banking-api db-init finished`.
+2. Apply `bootstrap/github-oidc` (it now also creates one deploy role per repo) and set the
+   GitHub variables in each repo from the outputs.
+3. Run the `dev` workflow of each repo to push the first image and register a task definition
+   revision, then scale up:
+   `aws ecs update-service --cluster cba-core-dev --service cba-core-dev-auth --desired-count 1`
+   and the same for `cba-core-dev-banking-api`.
+4. Start the auth service first. The realm loader (run by the cba-auth workflow) signs in as
+   `realm_loader_username` using `REALM_LOADER_PASSWORD` from the secret `cba-core-dev/auth`.
+   On the first start that is the bootstrap `admin`. Create a named admin, delete the temporary
+   one, and update the secret and `realm_loader_username`.
+5. Read the client secrets in the admin console and put them in Secrets Manager, as the cba-auth
+   README describes.
+
+Admin console: with `auth_block_admin_console = false` (the default) `/admin` is reachable
+through the ALB, which in dev is already limited by `alb_ingress_cidrs`. Set it to `true` for any
+environment where the ALB is open more widely.
+
+Banking API settings that are not in its README, such as the CBA-CORE client, go in
+`banking_api_extra_environment`. If the events module publishes to SNS, pass the topic ARNs in
+`banking_api_sns_topic_arns` so its task role can publish.
+
 ## Verify the deployment
 
 From `envs/dev`, check the services and ALB:

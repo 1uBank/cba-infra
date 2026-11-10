@@ -259,3 +259,88 @@ variable "web_image_tag" {
   description = "Tag of the web application image in the web ECR repository"
   type        = string
 }
+
+# ---------- cba-auth and cba-banking-api ----------
+variable "auth_hostname" {
+  description = "Public DNS name of the auth service (Keycloak), e.g. auth.dev.cba.1ubank.com. Must be covered by acm_certificate_arn. Becomes KC_HOSTNAME and the token issuer."
+  type        = string
+}
+
+variable "banking_api_hostname" {
+  description = "Public DNS name of the Banking API, e.g. api.dev.cba.1ubank.com. Must be covered by acm_certificate_arn."
+  type        = string
+}
+
+variable "portal_url" {
+  description = "Back-office portal URL given to the realm loader (PORTAL_URL). Defaults to https://<hostname>, or the ALB DNS name when no hostname is set."
+  type        = string
+  default     = null
+}
+
+variable "cba_core_api_url" {
+  description = "CBA-CORE API as the auth service reaches it, e.g. https://<host>/fineract-provider/api/v1 (CBA_CORE_MIGRATION_API_URL). Must be https with a valid certificate. Leave null to skip the first-login migration setting for now."
+  type        = string
+  default     = null
+}
+
+variable "auth_block_admin_console" {
+  description = "Return 403 on the public ALB for /admin/* and /realms/master/*. Set true wherever the ALB is open beyond a trusted CIDR list (prod)."
+  type        = bool
+  default     = false
+}
+
+variable "auth_cpu" {
+  type    = number
+  default = 1024
+}
+
+variable "auth_memory" {
+  type    = number
+  default = 2048
+}
+
+variable "auth_desired_count" {
+  description = "Initial auth task count. Keep 0 until the first image and db-init are done. Terraform ignores later changes."
+  type        = number
+  default     = 0
+}
+
+variable "auth_extra_environment" {
+  description = "Extra or overriding plain environment variables for the auth container."
+  type        = map(string)
+  default     = {}
+}
+
+variable "realm_loader_username" {
+  description = "Admin user the realm loader signs in as (master realm). The first start only has the bootstrap admin, so keep 'admin' until a dedicated realm-loader user exists."
+  type        = string
+  default     = "admin"
+}
+
+variable "banking_api_cpu" {
+  type    = number
+  default = 512
+}
+
+variable "banking_api_memory" {
+  type    = number
+  default = 1024
+}
+
+variable "banking_api_desired_count" {
+  description = "Initial Banking API task count. Keep 0 until the first image and db-init are done. Terraform ignores later changes."
+  type        = number
+  default     = 0
+}
+
+variable "banking_api_extra_environment" {
+  description = "Extra or overriding plain environment variables for the Banking API container (for example the CBA-CORE client settings)."
+  type        = map(string)
+  default     = {}
+}
+
+variable "banking_api_sns_topic_arns" {
+  description = "SNS topics the Banking API publishes events to. Gives its task role sns:Publish on them."
+  type        = list(string)
+  default     = []
+}

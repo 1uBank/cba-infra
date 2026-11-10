@@ -20,3 +20,11 @@ hostname        = "cba-dev.example.com" # optional
 route53_zone_id = "Z0123456789ABCDEFGHIJ" # optional
 
 cors_allowed_origin_patterns = "https://portal-dev.example.com"
+
+# cba-auth and cba-banking-api. The ACM certificate must cover both names
+# (a wildcard such as *.dev.example.com works).
+auth_hostname        = "auth.dev.example.com"
+banking_api_hostname = "api.dev.example.com"
+# portal_url         = "https://portal-dev.example.com"  # defaults to https://<hostname>
+# cba_core_api_url   = "https://cba-dev.example.com/fineract-provider/api/v1"
+# auth_block_admin_console = true   # use true wherever the ALB is open beyond a trusted CIDR list

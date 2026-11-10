@@ -44,6 +44,13 @@ module "cba_core" {
 
   cors_allowed_origin_patterns = var.cors_allowed_origin_patterns
 
+  # cba-auth and cba-banking-api
+  auth_hostname            = var.auth_hostname
+  banking_api_hostname     = var.banking_api_hostname
+  portal_url               = var.portal_url
+  cba_core_api_url         = var.cba_core_api_url
+  auth_block_admin_console = var.auth_block_admin_console
+
   # Dev-sized. For prod: cpu 4096 / memory 16384, db_multi_az = true,
   # db_deletion_protection = true, db_skip_final_snapshot = false,
   # deployment_minimum_healthy_percent = 100, deployment_maximum_percent = 200,
@@ -120,6 +127,33 @@ variable "web_image_tag" {
   type        = string
 }
 
+variable "auth_hostname" {
+  description = "Public DNS name of the auth service. Must be covered by the ACM certificate."
+  type        = string
+}
+
+variable "banking_api_hostname" {
+  description = "Public DNS name of the Banking API. Must be covered by the ACM certificate."
+  type        = string
+}
+
+variable "portal_url" {
+  type    = string
+  default = null
+}
+
+variable "cba_core_api_url" {
+  description = "CBA-CORE API as cba-auth reaches it (https, valid certificate)."
+  type        = string
+  default     = null
+}
+
+variable "auth_block_admin_console" {
+  description = "Block /admin/* on the public ALB. Use true wherever the ALB is open beyond a trusted CIDR list."
+  type        = bool
+  default     = false
+}
+
 # ---------- outputs ----------
 output "vpc_id" {
   value = module.cba_core.vpc_id
@@ -159,4 +193,70 @@ output "db_init_run_command" {
 
 output "scale_up_command" {
   value = module.cba_core.scale_up_command
+}
+
+# ---------- cba-auth ----------
+output "auth_ecr_repository_name" {
+  value = module.cba_core.auth_ecr_repository_name
+}
+
+output "auth_realm_loader_ecr_repository_name" {
+  value = module.cba_core.auth_realm_loader_ecr_repository_name
+}
+
+output "auth_service_name" {
+  value = module.cba_core.auth_service_name
+}
+
+output "auth_task_family" {
+  value = module.cba_core.auth_task_family
+}
+
+output "auth_container_name" {
+  value = module.cba_core.auth_container_name
+}
+
+output "auth_realm_loader_task_family" {
+  value = module.cba_core.auth_realm_loader_task_family
+}
+
+output "auth_realm_loader_container_name" {
+  value = module.cba_core.auth_realm_loader_container_name
+}
+
+output "auth_internal_url" {
+  value = module.cba_core.auth_internal_url
+}
+
+output "auth_db_init_run_command" {
+  value = module.cba_core.auth_db_init_run_command
+}
+
+output "private_subnets_csv" {
+  value = module.cba_core.private_subnets_csv
+}
+
+output "tasks_security_group_id" {
+  value = module.cba_core.tasks_security_group_id
+}
+
+# ---------- cba-banking-api ----------
+output "banking_api_ecr_repository_name" {
+  value = module.cba_core.banking_api_ecr_repository_name
+}
+
+output "banking_api_service_name" {
+  value = module.cba_core.banking_api_service_name
+}
+
+output "banking_api_task_family" {
+  value = module.cba_core.banking_api_task_family
+}
+
+output "banking_api_container_name" {
+  value = module.cba_core.banking_api_container_name
+}
+
+output "banking_api_db_init_run_command" {
+  value = module.cba_core.banking_api_db_init_run_command
 }
