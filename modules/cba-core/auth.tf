@@ -155,6 +155,7 @@ locals {
     psql -v ON_ERROR_STOP=1 -v app_pw="$APP_DB_PASSWORD" -d postgres <<'SQL'
     SELECT format('CREATE ROLE ${local.auth_db_user} LOGIN PASSWORD %L', :'app_pw')
       WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${local.auth_db_user}') \gexec
+    SELECT format('ALTER ROLE ${local.auth_db_user} WITH LOGIN PASSWORD %L', :'app_pw') \gexec
     GRANT ${local.auth_db_user} TO CURRENT_USER;
     SELECT 'CREATE DATABASE ${local.auth_db_name} OWNER ${local.auth_db_user}'
       WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${local.auth_db_name}') \gexec

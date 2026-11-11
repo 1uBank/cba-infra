@@ -143,7 +143,7 @@ variable "cpu_architecture" {
 variable "desired_count" {
   description = "Initial task count. Keep 0 for the first apply (no image in ECR yet). Terraform ignores later changes; scale with the CLI."
   type        = number
-  default     = 0
+  default     = 1
 }
 
 variable "health_check_grace_period" {
@@ -300,9 +300,9 @@ variable "auth_memory" {
 }
 
 variable "auth_desired_count" {
-  description = "Initial auth task count. Keep 0 until the first image and db-init are done. Terraform ignores later changes."
+  description = "Initial auth task count. Terraform ignores later changes."
   type        = number
-  default     = 0
+  default     = 1
 }
 
 variable "auth_extra_environment" {
@@ -328,9 +328,9 @@ variable "banking_api_memory" {
 }
 
 variable "banking_api_desired_count" {
-  description = "Initial Banking API task count. Keep 0 until the first image and db-init are done. Terraform ignores later changes."
+  description = "Initial Banking API task count. Terraform ignores later changes."
   type        = number
-  default     = 0
+  default     = 1
 }
 
 variable "banking_api_extra_environment" {
